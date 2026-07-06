@@ -1,5 +1,6 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from "react";
 import jsPDF from "jspdf";
+import { detectProvider, type AIProvider } from "@/lib/ai";
 import {
   Search, Save, Download, Mail, X, Loader2, Trash2, BarChart3, Zap, Target, Shield,
   TrendingUp, Users, Globe, MessageSquare, FileText, ArrowRight, Sparkles, Clock,
@@ -59,13 +60,21 @@ const globalCSS = `
   .si-search-bar { flex-direction:row }
   .si-empty-grid { grid-template-columns:repeat(3,1fr) }
   .si-compare-label { display:inline }
+  .si-header-nav { display:flex }
+  .si-header-center { display:flex }
+  .si-step-grid { grid-template-columns:repeat(5,1fr) }
+  .si-verdict-scores { display:flex }
+  .si-main { padding:36px 24px }
 
   @media (max-width: 768px) {
     .si-header { padding:10px 14px; gap:8px }
+    .si-header-inner { flex-wrap:wrap; height:auto; min-height:56px; padding:8px 0 }
     .si-header-brand-text { font-size:16px }
     .si-header-version { display:none }
-    .si-header-right { gap:6px }
+    .si-header-right { gap:6px; flex-wrap:wrap; justify-content:flex-end }
     .si-header-api-input { width:130px }
+    .si-header-nav { display:none }
+    .si-header-center { display:none }
     .si-compare-label { display:none }
     .si-footer-grid { grid-template-columns:1fr 1fr; gap:24px }
     .si-footer-bottom { flex-direction:column; align-items:center; text-align:center }
@@ -73,6 +82,9 @@ const globalCSS = `
     .si-hero-title { font-size:32px; letter-spacing:3px }
     .si-search-bar { flex-direction:column }
     .si-empty-grid { grid-template-columns:1fr }
+    .si-step-grid { grid-template-columns:repeat(2,1fr) }
+    .si-verdict-scores { flex-wrap:wrap; justify-content:center; width:100% }
+    .si-main { padding:24px 16px }
   }
   @media (max-width: 480px) {
     .si-header { padding:8px 10px }
@@ -81,6 +93,8 @@ const globalCSS = `
     .si-header-api-input { width:110px; font-size:10px }
     .si-footer-grid { grid-template-columns:1fr; gap:20px }
     .si-hero-title { font-size:24px; letter-spacing:2px }
+    .si-step-grid { grid-template-columns:1fr 1fr }
+    .si-main { padding:20px 12px }
   }
 `;
 
@@ -378,23 +392,12 @@ const Divider = () => <div style={{ height: 1, background: `linear-gradient(90de
 // MAIN COMPONENT
 // ═══════════════════════════════════════
 // AI Provider configs
-type AIProvider = "anthropic" | "groq" | "gemini" | "openai" | "mistral";
 const AI_PROVIDERS: Record<AIProvider, { label: string; icon: React.ReactNode; color: string; placeholder: string; url: string }> = {
   anthropic: { label: "Anthropic", icon: <Brain size={14}/>, color: "#d4a574", placeholder: "sk-ant-...", url: "https://api.anthropic.com/v1/messages" },
   groq: { label: "Groq", icon: <Cpu size={14}/>, color: "#f55036", placeholder: "gsk_...", url: "https://api.groq.com/openai/v1/chat/completions" },
   gemini: { label: "Gemini", icon: <Gem size={14}/>, color: "#4285f4", placeholder: "AIza...", url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
   openai: { label: "ChatGPT", icon: <Sparkles size={14}/>, color: "#10a37f", placeholder: "sk-...", url: "https://api.openai.com/v1/chat/completions" },
   mistral: { label: "Mistral", icon: <Zap size={14}/>, color: "#ff7000", placeholder: "...", url: "https://api.mistral.ai/v1/chat/completions" },
-};
-
-const detectProvider = (key: string): AIProvider | null => {
-  const k = key.trim();
-  if (k.startsWith("sk-ant-")) return "anthropic";
-  if (k.startsWith("gsk_")) return "groq";
-  if (k.startsWith("AIza")) return "gemini";
-  if (k.startsWith("sk-proj-") || k.startsWith("sk-")) return "openai";
-  if (k.length > 20 && !k.startsWith("sk")) return "mistral"; // fallback heuristic
-  return null;
 };
 
 const DEFAULT_GROQ_KEY = import.meta.env.VITE_DEFAULT_GROQ_API_KEY || "";
@@ -1645,23 +1648,22 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
       {/* Subtle noise texture */}
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0, opacity: 0.015, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
 
-      <header style={{
+      <header className="si-header" style={{
         position: "sticky", top: 0, zIndex: 100,
         background: C.glass, backdropFilter: "blur(24px) saturate(1.2)",
         borderBottom: `1px solid ${C.border}`,
-        padding: "0 24px",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, gap: 12 }}>
+        <div className="si-header-inner" style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, gap: 12 }}>
           {/* Left: Brand */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <div className="si-header-left" style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
             <img src="/favicon.svg" alt="SaaS Intel Logo" width={30} height={30} style={{ borderRadius: 8 }} />
-            <span style={{ fontFamily: F.display, fontSize: 18, color: C.text, letterSpacing: 2 }}>SAAS INTEL</span>
-            <span style={{ fontFamily: F.mono, fontSize: 9, color: C.textDim, background: C.bg3, padding: "2px 7px", borderRadius: 4, border: `1px solid ${C.border}`, letterSpacing: 1 }}>v1.0</span>
+            <span className="si-header-brand-text" style={{ fontFamily: F.display, fontSize: 18, color: C.text, letterSpacing: 2 }}>SAAS INTEL</span>
+            <span className="si-header-version" style={{ fontFamily: F.mono, fontSize: 9, color: C.textDim, background: C.bg3, padding: "2px 7px", borderRadius: 4, border: `1px solid ${C.border}`, letterSpacing: 1 }}>v1.0</span>
           </div>
 
           {/* Center: Nav Links (when report is loaded) */}
           {data && !isResearching && (
-            <div style={{ display: "flex", alignItems: "center", gap: 2, background: C.bg2, borderRadius: 10, padding: 3, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <div className="si-header-center si-header-nav" style={{ display: "flex", alignItems: "center", gap: 2, background: C.bg2, borderRadius: 10, padding: 3, border: `1px solid ${C.border}`, overflow: "hidden" }}>
               {(["Overview", "Sources", "Market", "Competition"] as TabName[]).map(tab => {
                 const isActive = activeTab === tab;
                 return (
@@ -1680,7 +1682,7 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
           )}
 
           {/* Right: Controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div className="si-header-right" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {savedReports.length > 0 && (
               <button onClick={() => setShowCompare(!showCompare)} style={{
                 background: showCompare ? C.b + "14" : C.bg3,
@@ -1736,6 +1738,7 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
               <Lock size={12} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: apiKey ? AI_PROVIDERS[provider].color + "88" : C.textDim }} />
               <input value={apiKey} onChange={e => handleApiKeyChange(e.target.value)} placeholder={AI_PROVIDERS[provider].placeholder}
                 type={showApiKey ? "text" : "password"}
+                className="si-header-api-input"
                 style={{ width: 160, background: C.bg2, border: `1px solid ${apiKey ? AI_PROVIDERS[provider].color + "28" : C.border}`, borderRadius: 8, padding: "6px 30px 6px 28px", color: C.text, fontFamily: F.mono, fontSize: 10, outline: "none", transition: "border-color 0.2s" }} />
               <button onClick={() => setShowApiKey(!showApiKey)} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: C.textDim, cursor: "pointer", padding: 2 }}>
                 <Eye size={12} />
@@ -1794,11 +1797,11 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
         </div>
       )}
 
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "36px 24px", position: "relative", zIndex: 1 }}>
+      <div className="si-main" style={{ maxWidth: 1080, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* HERO / SEARCH */}
         <div style={{ textAlign: "center", marginBottom: 44 }}>
           <p style={{ fontFamily: F.mono, fontSize: 11, color: C.textDim, letterSpacing: 3, marginBottom: 20, textTransform: "uppercase" }}>
-            Competitive intelligence in seconds
+            Competitive intelligence from one search
           </p>
           <h1 className="si-hero-title" style={{
             fontFamily: F.display, color: C.text, letterSpacing: 4, margin: "0 0 14px",
@@ -1909,7 +1912,7 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
               <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${C.g}, ${C.b}, ${C.p})`, borderRadius: 3, transition: "width 0.5s ease", boxShadow: `0 0 12px ${C.g}33` }} />
             </div>
             {/* Step Timeline */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 16 }}>
+            <div className="si-step-grid" style={{ display: "grid", gap: 8, marginBottom: 16 }}>
               {STEPS.map((step, i) => {
                 const isActive = i === currentStepIdx;
                 const isDone = completedSteps[i];
@@ -1976,7 +1979,7 @@ ${s?.gtm ? `<h2>Go-To-Market</h2><div class="card"><p><strong>Phase 1:</strong> 
                   </div>
                 )}
               </div>
-              <div style={{ display: "flex", gap: 18 }}>
+              <div className="si-verdict-scores" style={{ display: "flex", gap: 18 }}>
                 <ScoreRing score={data.synthesis.viability} label="Viability" size={75} color={C.g} />
                 {data.synthesis.ratings?.market_fit != null && <ScoreRing score={data.synthesis.ratings.market_fit} label="Market Fit" size={75} color={C.b} />}
                 {data.synthesis.ratings?.timing != null && <ScoreRing score={data.synthesis.ratings.timing} label="Timing" size={75} color={C.p} />}

@@ -1,6 +1,6 @@
 ﻿# SaaS Intelligence Engine
 
-AI-powered competitive research & market analysis for any SaaS product  10-step pipeline in one click.
+AI-powered competitive research and market analysis for any SaaS product — 10-step pipeline from one search.
 
 [![React](https://img.shields.io/badge/React-18-61dafb)](https://reactjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)](https://typescriptlang.org)
@@ -11,11 +11,11 @@ AI-powered competitive research & market analysis for any SaaS product  10-step 
 
 ## What It Does
 
-Enter any SaaS product name or idea and get a full intelligence report in seconds:
+Enter any SaaS product name or idea and run a full intelligence report:
 
 - **10-step AI pipeline**: Web Crawl → X/Twitter → Reddit → Product Hunt → LinkedIn → G2 Reviews → ICP → Market Sizing → Competitors → Synthesis
 - **10-tab report dashboard**: Overview, Sources, ICP, Market, Competition, SWOT, Pricing, GTM, Ask AI, Full Report
-- **Multi-provider AI**: Anthropic Claude, Groq (Llama), Google Gemini, OpenAI, Mistral  auto-detected from key format
+- **Multi-provider AI**: Anthropic Claude, Groq (Llama), Google Gemini, OpenAI, Mistral — auto-detected from key format
 - **Export**: PDF and HTML report export
 - **Save & compare** multiple reports in-session
 - **Ask AI tab**: Conversational follow-up grounded in your research data
@@ -28,16 +28,18 @@ Enter any SaaS product name or idea and get a full intelligence report in second
 ```
 saas-intelligence-engine/
 ├── public/
-│   └── favicon.svg          # SVG favicon (matches navbar logo)
+│   ├── favicon.svg
+│   └── robots.txt
 ├── src/
-│   ├── components/ui/       # shadcn/ui component library
-│   ├── hooks/               # Custom React hooks
-│   ├── lib/utils.ts         # Utility functions
+│   ├── lib/
+│   │   └── ai.ts            # AI provider detection
 │   ├── pages/
 │   │   ├── Index.tsx        # Main application (single-page)
 │   │   └── NotFound.tsx     # 404 page
-│   ├── App.tsx              # Router + providers
-│   └── main.tsx             # Entry point
+│   ├── test/                # Vitest tests
+│   ├── App.tsx              # React Router
+│   ├── main.tsx             # Entry point
+│   └── index.css            # Global base styles
 ├── .env.example             # Environment variable template
 ├── index.html               # HTML shell with meta/favicon
 └── vite.config.ts
@@ -52,7 +54,7 @@ saas-intelligence-engine/
 ### Prerequisites
 
 - Node.js 18+
-- pnpm (or npm/yarn)
+- npm (or pnpm/yarn)
 - At least one AI provider API key
 
 ### Install & Run
@@ -60,10 +62,10 @@ saas-intelligence-engine/
 ```bash
 git clone https://github.com/MuhammadTanveerAbbas/saas-intelligence-engine.git
 cd saas-intelligence-engine
-pnpm install
+npm install
 cp .env.example .env.local
-# Edit .env.local  add your VITE_DEFAULT_GROQ_API_KEY
-pnpm dev
+# Edit .env.local — add your VITE_DEFAULT_GROQ_API_KEY
+npm run dev
 ```
 
 Open [http://localhost:8080](http://localhost:8080).
@@ -100,11 +102,12 @@ Providers with native web search (Anthropic, Gemini) produce more accurate, up-t
 
 | Command | Description |
 |---|---|
-| `pnpm dev` | Start development server on port 8080 |
-| `pnpm build` | Production build to `dist/` |
-| `pnpm preview` | Preview production build locally |
-| `pnpm lint` | Run ESLint |
-| `pnpm test` | Run tests (Vitest) |
+| `npm run dev` | Start development server on port 8080 |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm test` | Run tests (Vitest) |
 
 ---
 
@@ -113,8 +116,8 @@ Providers with native web search (Anthropic, Gemini) produce more accurate, up-t
 ### Vercel (recommended)
 
 ```bash
-pnpm build
-# or connect your GitHub repo to Vercel  zero config needed
+npm run build
+# or connect your GitHub repo to Vercel — zero config needed
 ```
 
 Set `VITE_DEFAULT_GROQ_API_KEY` in your Vercel project environment variables.
@@ -122,14 +125,14 @@ Set `VITE_DEFAULT_GROQ_API_KEY` in your Vercel project environment variables.
 ### Netlify
 
 ```bash
-pnpm build
+npm run build
 # Publish directory: dist
 ```
 
 ### Docker / Self-hosted
 
 ```bash
-pnpm build
+npm run build
 # Serve the dist/ folder with any static file server
 npx serve dist
 ```
@@ -138,7 +141,7 @@ npx serve dist
 
 ## Security Notes
 
-- API keys entered in the UI are stored only in React component state  never persisted to localStorage or sent to any backend.
+- API keys entered in the UI are stored only in React component state — never persisted to localStorage or sent to any backend.
 - The `VITE_DEFAULT_GROQ_API_KEY` env variable is embedded in the client bundle at build time. Use a restricted key with rate limits for public deployments.
 - All AI API calls go directly from the user's browser to the respective provider.
 
@@ -146,7 +149,7 @@ npx serve dist
 
 ## Author
 
-Muhammad Tanveer Abbas  [themvpguy.vercel.app](https://themvpguy.vercel.app/)
+Muhammad Tanveer Abbas — [themvpguy.vercel.app](https://themvpguy.vercel.app/)
 
 - X: [@m_tanveerabbas](https://x.com/m_tanveerabbas)
 - LinkedIn: [muhammadtanveerabbas](https://linkedin.com/in/muhammadtanveerabbas)

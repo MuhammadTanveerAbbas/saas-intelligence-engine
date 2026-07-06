@@ -1,14 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { Zap, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.error("404: Route not found:", location.pathname);
-  }, [location.pathname]);
 
   return (
     <div style={{
